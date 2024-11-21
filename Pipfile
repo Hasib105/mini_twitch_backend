@@ -11,6 +11,8 @@ djangorestframework-simplejwt = "*"
 pymongo = {extras = ["srv"], version = "*"}
 mongoengine = "*"
 python-dotenv = "*"
+channels = "*"
+daphne = "*"
 
 [dev-packages]
 
