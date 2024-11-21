@@ -33,6 +33,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'djoser',
+    'channels',
 
     #apps
     'core',
@@ -67,7 +68,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
-
+ASGI_APPLICATION = 'backend.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -142,16 +143,11 @@ REST_FRAMEWORK = {
     ],
 }
 
-# DJOSER = {
-#     'ACTIVATION_URL': 'activate/{uid}/{token}',
-#     'SEND_ACTIVATION_EMAIL': True,
-#     'PERMISSIONS': {
-#         'user_create': ['rest_framework.permissions.AllowAny'],  # Allows anyone to create a user
-#     },
-# }
 
 
 
 
 # Get MongoDB URI
 MONGO_URI = os.getenv('MONGO_URI')
+print(MONGO_URI)
+mongoengine.connect(host=MONGO_URI)
