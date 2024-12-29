@@ -147,7 +147,7 @@ REST_FRAMEWORK = {
 
 
 
-# Get MongoDB URI
-MONGO_URI = os.getenv('MONGO_URI')
-print(MONGO_URI)
-mongoengine.connect(host=MONGO_URI)
+# # Get MongoDB URI
+# MONGO_URI = os.getenv('MONGO_URI')
+# print(MONGO_URI)
+# mongoengine.connect(host=MONGO_URI)
