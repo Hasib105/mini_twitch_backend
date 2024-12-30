@@ -1,44 +1,39 @@
-from mongoengine import Document, StringField, ReferenceField, BooleanField, DateTimeField, URLField
+from django.db import models
+from django.contrib.auth.models import User
 from django.utils.text import slugify
 from uuid import uuid4
 from datetime import datetime
 
-
-# Assuming you have defined a custom User document in MongoEngine
-
-class Stream(Document):
-    title = StringField(required=True, max_length=255)
-    description = StringField(blank=True)
-    streamer_username = StringField(required=True)  # Store User's username (from SQLite User)
-    slug = StringField(unique=True, required=True)
-    start_time = DateTimeField(default=datetime.now)
-    end_time = DateTimeField(null=True)
-    is_live = BooleanField(default=True)  # Indicates if the stream is live
-    
+class Stream(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    streamer = models.ForeignKey(User, on_delete=models.CASCADE)
+    slug = models.SlugField(unique=True, blank=True)
+    stream_key = models.CharField(max_length=255, unique=True, blank=True)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    is_live = models.BooleanField(default=False)
+    recording_path = models.FileField(upload_to='recordings/', blank=True, null=True)
+    duration = models.DurationField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(f"{self.title}-{uuid4().hex[:8]}")
+            self.slug = f"{slugify(self.title)}-{uuid4().hex[:8]}"
+        if not self.stream_key:
+            self.stream_key = uuid4().hex
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.title} by {self.streamer_username}"
+        return f"{self.title} by {self.streamer.username}"
 
-    meta = {
-        'collection': 'streams',  # MongoDB collection name
-        'ordering': ['-start_time'],  # Order by latest streams first
-    }
+    class Meta:
+        ordering = ['-start_time']
 
-class ChatMessage(Document):
-    stream_slug = StringField(required=True)  # Reference Stream by slug
-    user = StringField(required=True)  # Store user's username
-    message = StringField(required=True)
-    timestamp = DateTimeField(default=datetime.now)
+class ChatMessage(models.Model):
+    stream = models.ForeignKey(Stream, on_delete=models.CASCADE, related_name='messages')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Message by {self.user} in stream {self.stream_slug}"
-
-    meta = {
-        'collection': 'chat_messages',  
-        'ordering': ['-timestamp'],    
-    }
+        return f"{self.user.username}: {self.message} in {self.stream.title}"
